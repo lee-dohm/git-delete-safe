@@ -10,7 +10,7 @@ defmodule GitDeleteSafe.State do
   For another example of the same pattern used at larger scale, see `Plug.Conn`.
   """
 
-  defstruct [:arguments, :invalid_options, :options]
+  defstruct [:arguments, :invalid_options, :options, :success, :working_dir]
 
   @type parsed_options :: {OptionParser.parsed(), OptionParser.argv(), OptionParser.errors()}
 
@@ -18,7 +18,9 @@ defmodule GitDeleteSafe.State do
     %__MODULE__{
       arguments: arguments,
       invalid_options: invalid,
-      options: coalesce_options(options)
+      options: coalesce_options(options),
+      success: true,
+      working_dir: File.cwd!()
     }
   end
 
