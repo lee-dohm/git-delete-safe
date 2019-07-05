@@ -48,7 +48,8 @@ defmodule GitDeleteSafe.MixProject do
 
   defp escript do
     [
-      main_module: GitDeleteSafe.CLI
+      main_module: GitDeleteSafe.CLI,
+      name: "git-delete-safe"
     ]
   end
 end
