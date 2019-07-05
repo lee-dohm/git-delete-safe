@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# script/install: Build and install the escript.
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+[ -z "$DEBUG" ] || set -x
+
+script/test
+
+echo "==> Build and install escript…"
+
+export MIX_ENV="prod"
+
+mix escript.install --force

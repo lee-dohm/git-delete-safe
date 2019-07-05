@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# script/docs: Generates the developer documentation.
+#
+# Use: script/docs [options]
+#
+# ## Options
+#
+# * `--open` - Launches the developer documentation in the default web browser
+# * `--test` - Generates the developer documentation with test modules included
+
+set -e
+cd "$(dirname "$0")/.."
+
+open=
+test_env=
+
+while :; do
+  case "$1" in
+    --open)
+      open="1"
+      ;;
+
+    --test)
+      test_env="1"
+      ;;
+
+    *)
+      break
+  esac
+
+  shift
+done
+
+if [ -n "$test_env" ]; then
+  echo "==> Include test helper modules in documentation..."
+  export MIX_ENV="test"
+fi
+
+script/bootstrap
+
+echo "==> Generating documentation..."
+mix docs "$@"
+
+if [ -n "$open" ]; then
+  echo "==> Open documentation in primary browser..."
+  open doc/index.html
+fi
