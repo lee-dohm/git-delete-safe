@@ -7,6 +7,13 @@ defmodule GitDeleteSafe.CLI do
 
   require Logger
 
+  defmacrop log_state(state) do
+    quote do
+      Logger.debug(fn -> "Starting #{format_function(__ENV__.function)}" end)
+      Logger.debug(fn -> inspect(unquote(state)) end)
+    end
+  end
+
   def main(args) do
     args
     |> parse_arguments()
@@ -31,26 +38,35 @@ defmodule GitDeleteSafe.CLI do
   def run(%State{} = state) do
     state
     |> set_verbosity()
-    |> has_no_untracked_files()
+    |> fetch()
+    |> has_no_uncommitted_files()
+    |> has_no_stashed_changes()
     |> handle_success()
+  end
+
+  def fetch(state) do
+    case execute_git(["fetch"]) do
+      {_, _output, 0} -> state
+      error -> handle_git_error(state, error)
+    end
   end
 
   def handle_success(%State{success: false}), do: shutdown(1)
   def handle_success(_state), do: nil
 
-  def has_no_untracked_files(%State{} = state) do
-    case execute_git(["ls-files", "--other", "--directory", "--exclude-standard"]) do
+  def has_no_stashed_changes(%State{} = state) do
+    case execute_git(["stash", "list"]) do
       {_, "", 0} ->
-        Logger.debug("#{state.working_dir} has no untracked files")
+        Logger.debug("#{state.working_dir} has no stashed changes")
 
         state
 
       {_, output, 0} ->
-        Logger.error("#{state.working_dir} has untracked files")
+        Logger.error("#{state.working_dir} has stashed changes")
 
         output
         |> String.split("\n", trim: true)
-        |> Enum.each(fn line -> Logger.info("* #{line}") end)
+        |> Enum.each(fn line -> Logger.info("\t#{line}") end)
 
         %State{state | success: false}
 
@@ -59,10 +75,24 @@ defmodule GitDeleteSafe.CLI do
     end
   end
 
-  defmacrop log_state(state) do
-    quote do
-      Logger.debug(fn -> "Starting #{format_function(__ENV__.function)}" end)
-      Logger.debug(fn -> inspect(unquote(state)) end)
+  def has_no_uncommitted_files(%State{} = state) do
+    case execute_git(["status", "--porcelain"]) do
+      {_, "", 0} ->
+        Logger.debug("#{state.working_dir} has no uncommitted files")
+
+        state
+
+      {_, output, 0} ->
+        Logger.error("#{state.working_dir} has uncommitted files")
+
+        output
+        |> String.split("\n", trim: true)
+        |> Enum.each(fn line -> Logger.info("\t#{line}") end)
+
+        %State{state | success: false}
+
+      error ->
+        handle_git_error(state, error)
     end
   end
 
