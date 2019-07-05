@@ -1,18 +1,6 @@
 defmodule GitDeleteSafe do
   @moduledoc """
-  Documentation for GitDeleteSafe.
+  A utility for validating that a git repository is "safe to delete", that all local changes have
+  been pushed to the remote repository.
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> GitDeleteSafe.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
