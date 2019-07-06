@@ -8,8 +8,7 @@ I work in a lot of git repositories simultaneously. When I'm working from my typ
 
 This utility aims to solve the above problem by verifying that a local repository:
 
-1. Has no untracked files
-1. Has no uncommitted changes
+1. Has no uncommitted files (whether modified, staged, or untracked)
 1. Has no stashed changes
 1. Has no branch that is "ahead" any number of commits
 
