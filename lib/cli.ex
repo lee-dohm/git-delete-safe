@@ -41,6 +41,7 @@ defmodule GitDeleteSafe.CLI do
     |> fetch()
     |> has_no_uncommitted_files()
     |> has_no_stashed_changes()
+    |> has_no_unpushed_commits()
     |> handle_success()
   end
 
@@ -96,6 +97,16 @@ defmodule GitDeleteSafe.CLI do
     end
   end
 
+  def has_no_unpushed_commits(%State{} = state) do
+    state
+  end
+
+  defp execute_git(text) when is_binary(text) do
+    text
+    |> Shellwords.split!()
+    |> execute_git()
+  end
+
   defp execute_git(list) when is_list(list) do
     command = "git #{Enum.join(list, " ")}"
 
@@ -119,6 +130,13 @@ defmodule GitDeleteSafe.CLI do
   end
 
   defp handle_git_error(_state, {_command, _output, error_code}), do: shutdown(error_code)
+
+  defp list_branches do
+    case execute_git("branch --format=\"%(refname:lstrip=2)\"") do
+      {_, output, 0} -> String.split(output, "\n")
+      error -> handle_git_error(state, error)
+    end
+  end
 
   defp set_verbosity(%State{options: %{debug: true}} = state) do
     Logger.configure_backend(:console, level: :debug)

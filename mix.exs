@@ -24,6 +24,7 @@ defmodule GitDeleteSafe.MixProject do
 
   defp deps do
     [
+      {:shellwords, github: "lee-dohm/shellwords"},
       {:ex_doc, "> 0.0.0", only: :dev, runtime: false},
       {:version_tasks, "~> 0.11", only: :dev}
     ]
